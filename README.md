@@ -46,7 +46,18 @@ npm run build
 
 ## Build et déploiement
 
-### Build des images Docker
+### Pipeline CI/CD
+
+Le projet utilise un pipeline CI/CD fusionné situé dans `.github/workflows/build.yml` qui gère les deux builds Docker séparément :
+
+- **Backend** : `ghcr.io/${{ github.repository }}/backend`
+- **Frontend** : `ghcr.io/${{ github.repository }}/frontend`
+
+Le pipeline s'exécute automatiquement sur :
+- Les pushes vers la branche `main`
+- Les pull requests vers la branche `main`
+
+### Build des images Docker localement
 
 ```bash
 # Build du backend
