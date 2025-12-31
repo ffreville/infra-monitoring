@@ -139,6 +139,35 @@ export const kubernetesApi = {
     })
 
     return combinedData
+  },
+
+  // Vérifier les mises à jour disponibles pour les ressources
+  async checkForUpdates(resources) {
+    try {
+      // Utiliser le premier cluster disponible pour l'API de vérification des versions
+      const firstCluster = clusters[0]
+      if (!firstCluster) {
+        throw new Error('Aucun cluster disponible')
+      }
+
+      const response = await fetch(`${firstCluster.apiUrl}/api/v1/check-updates`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ components: resources })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status} - ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Erreur lors de la vérification des mises à jour:', error)
+      // Retourner des données vides en cas d'erreur
+      return { updates: [] }
+    }
   }
 }
 

@@ -1,5 +1,20 @@
 package models
 
+// KubernetesResource représente un composant Kubernetes générique
+type KubernetesResource struct {
+	Kind      string `json:"kind"`
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+	Version   string `json:"version"`
+}
+
+// VersionUpdate représente une mise à jour de version disponible
+type VersionUpdate struct {
+	Kind           string `json:"kind"`
+	CurrentVersion string `json:"currentVersion"`
+	LatestVersion  string `json:"latestVersion"`
+}
+
 // Namespace représente un namespace simplifié
 type Namespace struct {
 	Name   string            `json:"name"`
@@ -18,6 +33,7 @@ type Deployment struct {
 	Labels    map[string]string `json:"labels,omitempty"`
 	Age       string            `json:"age"`
 	Images    []string          `json:"images"`
+	Version   string            `json:"version,omitempty"`
 }
 
 // CronJob représente un cronjob simplifié
@@ -31,6 +47,7 @@ type CronJob struct {
 	Labels    map[string]string `json:"labels,omitempty"`
 	Age       string            `json:"age"`
 	Images    []string          `json:"images"`
+	Version   string            `json:"version,omitempty"`
 }
 
 // StatefulSet représente un statefulset simplifié
@@ -42,4 +59,5 @@ type StatefulSet struct {
 	Labels    map[string]string `json:"labels,omitempty"`
 	Age       string            `json:"age"`
 	Images    []string          `json:"images"`
+	Version   string            `json:"version,omitempty"`
 }

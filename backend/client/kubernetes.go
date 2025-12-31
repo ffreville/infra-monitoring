@@ -77,6 +77,7 @@ func (k *KubernetesClient) GetNamespaces(ctx context.Context) ([]models.Namespac
 	return namespaces, nil
 }
 
+// GetContainersImage extrait les noms des images des conteneurs
 func GetContainersImage(containers []v1.Container) []string {
 	var images []string
 	for _, container := range containers {
@@ -85,6 +86,22 @@ func GetContainersImage(containers []v1.Container) []string {
 		images = append(images, nameSplitted[len(nameSplitted)-1])
 	}
 	return images
+}
+
+// GetContainerVersion extrait la version d'un conteneur
+func GetContainerVersion(image string) string {
+	// Extraire le nom de l'image (sans le registry et le namespace)
+	imageName := strings.Split(image, "@")[0]
+	parts := strings.Split(imageName, "/")
+	imageName = parts[len(parts)-1]
+	
+	// Extraire la version (après le dernier ':')
+	versionParts := strings.Split(imageName, ":")
+	if len(versionParts) > 1 {
+		return versionParts[len(versionParts)-1]
+	}
+	
+	return "latest"
 }
 
 // GetDeployments récupère tous les déploiements du cluster ou d'un namespace spécifique
@@ -96,6 +113,12 @@ func (k *KubernetesClient) GetDeployments(ctx context.Context, namespace string)
 
 	var deployments []models.Deployment
 	for _, deploy := range deploymentList.Items {
+		// Extraire la version du premier conteneur
+		var version string
+		if len(deploy.Spec.Template.Spec.Containers) > 0 {
+			version = GetContainerVersion(deploy.Spec.Template.Spec.Containers[0].Image)
+		}
+
 		deployment := models.Deployment{
 			Name:      deploy.Name,
 			Namespace: deploy.Namespace,
@@ -105,6 +128,7 @@ func (k *KubernetesClient) GetDeployments(ctx context.Context, namespace string)
 			Labels:    deploy.Labels,
 			Age:       deploy.CreationTimestamp.Format("2006-01-02 15:04:05"),
 			Images:    GetContainersImage(deploy.Spec.Template.Spec.Containers),
+			Version:   version,
 		}
 		deployments = append(deployments, deployment)
 	}
@@ -126,6 +150,12 @@ func (k *KubernetesClient) GetCronJobs(ctx context.Context, namespace string) ([
 			lastRun = cj.Status.LastScheduleTime.Format("2006-01-02 15:04:05")
 		}
 
+		// Extraire la version du premier conteneur
+		var version string
+		if len(cj.Spec.JobTemplate.Spec.Template.Spec.Containers) > 0 {
+			version = GetContainerVersion(cj.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Image)
+		}
+
 		cronJob := models.CronJob{
 			Name:      cj.Name,
 			Namespace: cj.Namespace,
@@ -136,6 +166,7 @@ func (k *KubernetesClient) GetCronJobs(ctx context.Context, namespace string) ([
 			Labels:    cj.Labels,
 			Age:       cj.CreationTimestamp.Format("2006-01-02 15:04:05"),
 			Images:    GetContainersImage(cj.Spec.JobTemplate.Spec.Template.Spec.Containers),
+			Version:   version,
 		}
 		cronJobs = append(cronJobs, cronJob)
 	}
@@ -152,6 +183,12 @@ func (k *KubernetesClient) GetStatefulSets(ctx context.Context, namespace string
 
 	var statefulSets []models.StatefulSet
 	for _, sts := range statefulSetList.Items {
+		// Extraire la version du premier conteneur
+		var version string
+		if len(sts.Spec.Template.Spec.Containers) > 0 {
+			version = GetContainerVersion(sts.Spec.Template.Spec.Containers[0].Image)
+		}
+
 		statefulSet := models.StatefulSet{
 			Name:      sts.Name,
 			Namespace: sts.Namespace,
@@ -160,6 +197,7 @@ func (k *KubernetesClient) GetStatefulSets(ctx context.Context, namespace string
 			Labels:    sts.Labels,
 			Age:       sts.CreationTimestamp.Format("2006-01-02 15:04:05"),
 			Images:    GetContainersImage(sts.Spec.Template.Spec.Containers),
+			Version:   version,
 		}
 		statefulSets = append(statefulSets, statefulSet)
 	}

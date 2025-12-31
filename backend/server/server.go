@@ -41,6 +41,8 @@ func (s *APIServer) setupRoutes() {
 	apiV1.HandleFunc("/deployments", s.k8sHandler.GetDeployments).Methods("GET")
 	apiV1.HandleFunc("/cronjobs", s.k8sHandler.GetCronJobs).Methods("GET")
 	apiV1.HandleFunc("/statefulsets", s.k8sHandler.GetStatefulSets).Methods("GET")
+	apiV1.HandleFunc("/check-updates", handlers.CheckLatestVersionsHandler).Methods("POST")
+	apiV1.HandleFunc("/latest-version", handlers.GetLatestVersionHandler).Methods("GET")
 
 	// Routes de santé et informations
 	s.router.HandleFunc("/health", s.healthHandler.HealthCheck).Methods("GET")

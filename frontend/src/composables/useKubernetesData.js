@@ -20,6 +20,10 @@ export function useKubernetesData() {
   const selectedResourceTypes = ref([]) // Changé en array
   const selectedClusters = ref(['cluster-dev']) // Dev sélectionné par défaut
   const showOnlyDifferentVersions = ref(false)
+  const checkForUpdates = ref(false)
+  
+  // État des mises à jour
+  const versionUpdates = ref({}) // { resourceKey: { kind, currentVersion, latestVersion } }
 
   // Fonction pour regrouper les déploiements par nom (méthode originale)
   function groupDeploymentsByName(deployments) {
@@ -174,6 +178,86 @@ export function useKubernetesData() {
     return uniqueValidVersions.length > 1
   }
 
+  // Fonction pour vérifier si une mise à jour est disponible pour une ressource
+  function hasUpdateAvailable(resource) {
+    if (!checkForUpdates.value) return false
+    
+    const resourceKey = `${resource.namespace}-${resource.name}`
+    const updateInfo = versionUpdates.value[resourceKey]
+    
+    if (!updateInfo) return false
+    
+    // Vérifier si la version actuelle est différente de la dernière version
+    const currentVersion = Object.values(resource.clusterVersions || {})[0]?.version || ''
+    return updateInfo.latestVersion && updateInfo.latestVersion !== currentVersion
+  }
+
+  // Fonction pour obtenir la dernière version disponible pour une ressource
+  function getLatestVersion(resource) {
+    if (!checkForUpdates.value) return null
+    
+    const resourceKey = `${resource.namespace}-${resource.name}`
+    const updateInfo = versionUpdates.value[resourceKey]
+    
+    return updateInfo?.latestVersion || null
+  }
+
+  // Fonction pour vérifier les mises à jour disponibles
+  async function checkForUpdatesAvailable() {
+    if (!checkForUpdates.value) {
+      versionUpdates.value = {}
+      return
+    }
+    
+    try {
+      // Collecter toutes les ressources visibles
+      const allResources = []
+      
+      filteredDeployments.value.forEach(deployment => {
+        allResources.push({
+          kind: 'Deployment',
+          name: deployment.name,
+          namespace: deployment.namespace,
+          version: Object.values(deployment.clusterVersions || {})[0]?.version || ''
+        })
+      })
+      
+      filteredCronJobs.value.forEach(cronjob => {
+        allResources.push({
+          kind: 'CronJob',
+          name: cronjob.name,
+          namespace: cronjob.namespace,
+          version: Object.values(cronjob.clusterVersions || {})[0]?.version || ''
+        })
+      })
+      
+      filteredStatefulSets.value.forEach(statefulset => {
+        allResources.push({
+          kind: 'StatefulSet',
+          name: statefulset.name,
+          namespace: statefulset.namespace,
+          version: Object.values(statefulset.clusterVersions || {})[0]?.version || ''
+        })
+      })
+      
+      // Envoyer la requête pour vérifier les mises à jour
+      const response = await kubernetesApi.checkForUpdates(allResources)
+      
+      // Mettre à jour l'état des mises à jour
+      const updates = {}
+      response.updates.forEach(update => {
+        // Créer une clé unique pour chaque ressource
+        const resourceKey = `${update.kind}-${update.namespace}-${update.name}`
+        updates[resourceKey] = update
+      })
+      
+      versionUpdates.value = updates
+    } catch (error) {
+      console.error('Erreur lors de la vérification des mises à jour:', error)
+      versionUpdates.value = {}
+    }
+  }
+
   // Charger les données des clusters sélectionnés
   async function loadAllData() {
     if (selectedClusters.value.length === 0) {
@@ -243,6 +327,11 @@ export function useKubernetesData() {
   // Recharger quand les clusters sélectionnés changent
   watch(selectedClusters, () => {
     loadAllData()
+  }, { deep: true })
+
+  // Vérifier les mises à jour quand les filtres changent
+  watch([filteredDeployments, filteredCronJobs, filteredStatefulSets, checkForUpdates], async () => {
+    await checkForUpdatesAvailable()
   }, { deep: true })
 
   // Filtrer les ressources par namespace et cluster
@@ -381,6 +470,8 @@ export function useKubernetesData() {
     selectedResourceTypes,
     selectedClusters,
     showOnlyDifferentVersions,
+    checkForUpdates,
+    versionUpdates,
     
     // Computed
     filteredDeployments,
@@ -396,6 +487,9 @@ export function useKubernetesData() {
     getFilteredResources,
     shouldShowResourceType,
     getAvailableClusters,
-    hasDifferentVersions
+    hasDifferentVersions,
+    hasUpdateAvailable,
+    getLatestVersion,
+    checkForUpdatesAvailable
   }
 }
