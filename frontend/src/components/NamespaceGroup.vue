@@ -84,8 +84,6 @@
                 :key="`${deployment.namespace}-${deployment.name}`"
                 :deployment="deployment"
                 :selected-clusters="selectedClusters"
-                :check-for-updates="checkForUpdates"
-                :version-updates="versionUpdates"
                 @view-details="$emit('view-details', $event)"
                 @scale="$emit('scale', $event)"
               />
@@ -107,8 +105,6 @@
                 :key="`${cronjob.namespace}-${cronjob.name}`"
                 :cronjob="cronjob"
                 :selected-clusters="selectedClusters"
-                :check-for-updates="checkForUpdates"
-                :version-updates="versionUpdates"
                 @view-details="$emit('view-details', $event)"
                 @trigger="$emit('trigger', $event)"
               />
@@ -130,8 +126,6 @@
                 :key="`${statefulset.namespace}-${statefulset.name}`"
                 :statefulset="statefulset"
                 :selected-clusters="selectedClusters"
-                :check-for-updates="checkForUpdates"
-                :version-updates="versionUpdates"
                 @view-details="$emit('view-details', $event)"
                 @scale="$emit('scale', $event)"
               />
@@ -168,14 +162,6 @@ const props = defineProps({
   initialExpanded: {
     type: Boolean,
     default: true
-  },
-  checkForUpdates: {
-    type: Boolean,
-    default: false
-  },
-  versionUpdates: {
-    type: Object,
-    default: () => ({})
   }
 })
 

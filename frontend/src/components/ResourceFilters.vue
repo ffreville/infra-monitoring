@@ -274,23 +274,6 @@
             Versions différentes
           </label>
         </div>
-
-        <!-- Checkbox vérifier mises à jour -->
-        <div class="flex items-center">
-          <input
-            id="check-updates-filter"
-            type="checkbox"
-            :checked="checkForUpdates"
-            @change="$emit('update:checkForUpdates', $event.target.checked)"
-            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label 
-            for="check-updates-filter" 
-            class="ml-2 text-sm text-gray-700 cursor-pointer whitespace-nowrap"
-          >
-            Vérifier mises à jour
-          </label>
-        </div>
       </div>
 
       <!-- Indicateurs de filtres actifs -->
@@ -325,14 +308,6 @@
             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
           </svg>
           Versions différentes
-        </div>
-
-        <!-- Indicateur vérifier mises à jour -->
-        <div v-if="checkForUpdates" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-          <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-          </svg>
-          Mises à jour
         </div>
       </div>
     </div>
@@ -372,10 +347,6 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  checkForUpdates: {
-    type: Boolean,
-    default: false
-  },
   totalCount: {
     type: Number,
     default: 0
@@ -387,7 +358,6 @@ const emit = defineEmits([
   'update:selectedResourceTypes',
   'update:selectedClusters',
   'update:showOnlyDifferentVersions',
-  'update:checkForUpdates',
   'reset-filters'
 ])
 
@@ -426,8 +396,7 @@ const hasActiveFilters = computed(() => {
   return props.selectedNamespaces.length > 0 || 
          props.selectedResourceTypes.length > 0 || 
          props.selectedClusters.length > 0 ||
-         props.showOnlyDifferentVersions ||
-         props.checkForUpdates
+         props.showOnlyDifferentVersions
 })
 
 const isAllClustersSelected = computed(() => {

@@ -18,13 +18,11 @@
           :cluster-statuses="state.clusterStatuses"
           :cluster-errors="state.clusterErrors"
           :show-only-different-versions="showOnlyDifferentVersions"
-          :check-for-updates="checkForUpdates"
           :total-count="totalResourcesCount"
           @update:selected-namespaces="selectedNamespaces = $event"
           @update:selected-resource-types="selectedResourceTypes = $event"
           @update:selected-clusters="selectedClusters = $event"
           @update:show-only-different-versions="showOnlyDifferentVersions = $event"
-          @update:check-for-updates="checkForUpdates = $event"
           @reset-filters="resetFilters"
         />
       </div>
@@ -95,8 +93,6 @@
             :namespace-resources="namespaceResources"
             :selected-clusters="selectedClusters"
             :initial-expanded="namespaceExpandedState[namespaceName] !== false"
-            :check-for-updates="checkForUpdates"
-            :version-updates="state.versionUpdates"
             @view-details="handleViewDetails"
             @scale="handleScale"
             @trigger="handleTrigger"
@@ -151,7 +147,6 @@ const {
   selectedResourceTypes,
   selectedClusters,
   showOnlyDifferentVersions,
-  checkForUpdates,
   groupedResourcesByNamespace,
   totalResourcesCount,
   loadAllData,
